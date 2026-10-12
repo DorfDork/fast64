@@ -1,3 +1,4 @@
+from functools import cache
 from pathlib import Path
 
 import bpy
@@ -6,6 +7,7 @@ from mathutils import Matrix, Vector
 
 from ...f3d.f3d_gbi import get_F3D_GBI
 from ...f3d.f3d_material import createF3DMat, F3DMaterial_UpdateLock, update_node_values_of_material
+from ...f3d.f3d_material_presets import material_presets
 from ...f3d.f3d_parser import renderModeMask
 from ...utility import PluginError, yUpToZUp, deselectAllObjects, gammaInverseValue, int_from_s16
 from ..contrib import install_contrib_path
@@ -20,6 +22,18 @@ TEXTURE_FORMATS = {0: "RGBA", 2: "CI", 3: "IA", 4: "I"}
 TEXTURE_SIZES = {0: "4", 1: "8", 2: "16", 3: "32"}
 
 ALPHA_COMPARE = ("G_AC_NONE", "G_AC_THRESHOLD", "G_AC_THRESHOLD", "G_AC_DITHER")
+
+PRESET_FIELDS = (
+    *(f"combiner{cycle}.{field}" for cycle in (1, 2) for field in CYCLE_FIELDS),
+    "rdp_settings.g_lighting",
+    "rdp_settings.g_fog",
+    "rdp_settings.g_tex_gen",
+    "rdp_settings.g_mdsft_cycletype",
+    "rdp_settings.g_mdsft_alpha_compare",
+    "rdp_settings.zmode",
+    "rdp_settings.cvg_x_alpha",
+    "rdp_settings.force_bl",
+)
 
 
 def get_extent(points) -> float:
@@ -191,6 +205,31 @@ def set_texture_props(tex_props, texture, render, images: dict[str, bpy.types.Im
         field.high = size - 1
 
 
+def get_preset_fields(f3d_mat) -> tuple:
+    return tuple(f3d_mat.path_resolve(path) for path in PRESET_FIELDS)
+
+
+@cache
+def get_presets() -> dict[str, tuple]:
+    presets = {}
+    for filename in material_presets["homebrew"]:
+        material = createF3DMat(None, preset=filename)
+        presets[material.f3d_mat.presetName] = get_preset_fields(material.f3d_mat)
+        bpy.data.materials.remove(material)
+    return presets
+
+
+def get_closest_preset(f3d_mat) -> str:
+    fields = get_preset_fields(f3d_mat)
+    combiner_count = 2 * len(CYCLE_FIELDS)
+
+    def distance(preset):
+        differences = [field != other for field, other in zip(fields, preset[1])]
+        return sum(differences[combiner_count:]), sum(differences[:combiner_count])
+
+    return min(get_presets().items(), key=distance)[0]
+
+
 def material_key(group):
     return (group.texture, group.render, group.translucent, group.double_sided)
 
@@ -216,6 +255,7 @@ def create_materials(obj: bpy.types.Object, groups, images) -> dict:
         f3d_material.f3d_update_flag = False
         with F3DMaterial_UpdateLock(f3d_material) as locked_material:
             update_node_values_of_material(locked_material, bpy.context)
+        f3d_material.f3d_mat.presetName = get_closest_preset(f3d_material.f3d_mat)
     return indices
 
 
@@ -238,6 +278,8 @@ def create_mesh(context: bpy.types.Context, name: str, groups, images, transform
             optional_vertices.setdefault(group.optional_segment, []).extend(range(base, len(positions)))
         for triangle in group.triangles:
             corners = (triangle.v1, triangle.v2, triangle.v3)
+            if len(set(corners)) < 3:
+                continue
             triangles.append([base + corner for corner in corners])
             triangle_materials.append(material_index)
             for corner in corners:
