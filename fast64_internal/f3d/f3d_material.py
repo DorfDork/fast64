@@ -2607,12 +2607,12 @@ def link_f3d_material_library():
 
         # linking is SUPER slow, this only links if the scene hasnt been linked yet
         # in future updates, this will likely need to be something numerated so if more nodes are added then they will be linked
-        if bpy.context.scene.get("f3d_lib_dir") != dirNode:
-            # link groups after to bring extra node_groups
-            for node_group in data_from.node_groups:
-                if node_group is not None:
-                    bpy.ops.wm.link(filepath=os.path.join(dirNode, node_group), directory=dirNode, filename=node_group)
-            bpy.context.scene["f3d_lib_dir"] = dirNode
+        linked_before = bpy.context.scene.get("f3d_lib_dir") == dirNode
+        # link groups after to bring extra node_groups
+        for node_group in data_from.node_groups:
+            if node_group is not None and not (linked_before and node_group in bpy.data.node_groups):
+                bpy.ops.wm.link(filepath=os.path.join(dirNode, node_group), directory=dirNode, filename=node_group)
+        bpy.context.scene["f3d_lib_dir"] = dirNode
 
     # TODO: Figure out a better way to save the user's old mode
     if prevMode != "OBJECT":
@@ -4197,6 +4197,8 @@ class MATERIAL_MT_f3d_presets(Menu):
                 paths += bpy.utils.preset_paths("f3d/oot")
                 if bpy.context.scene.f3d_type == "F3DEX3":
                     paths += bpy.utils.preset_paths("f3d/oot_f3dex3")
+            elif game == "dk64":
+                paths += bpy.utils.preset_paths("f3d/homebrew")
             else:
                 paths += bpy.utils.preset_paths(f"f3d/{game}")
         self.path_menu(

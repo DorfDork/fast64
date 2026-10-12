@@ -23,6 +23,8 @@ extend-exclude = '''
 ^(
 # Addon updater is copied from another repo
 /addon_updater\.py | /addon_updater_ops\.py
+# dk64_lib_kongvoluted is a submodule from its own repo, which formats itself
+| /fast64_internal/dk64/contrib/dk64_lib_kongvoluted/.*
 )$
 '''
 

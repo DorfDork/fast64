@@ -30,6 +30,9 @@ from .fast64_internal.utility_anim import utility_anim_register, utility_anim_un
 from .fast64_internal.mk64 import MK64_Properties, mk64_register, mk64_unregister
 from .fast64_internal.mk64.mk64_constants import mk64_world_defaults
 
+from .fast64_internal.dk64 import DK64_BoneProperties, DK64_Properties, dk64_register, dk64_unregister
+from .fast64_internal.dk64.dk64_constants import dk64_world_defaults
+
 from .fast64_internal.f3d.f3d_gbi import get_F3D_GBI
 from .fast64_internal.f3d.f3d_material import (
     F3D_MAT_CUR_VERSION,
@@ -69,7 +72,7 @@ from .fast64_internal.gltf_extension import (
 
 # info about add on
 bl_info = {
-    "name": "Fast64",
+    "name": "Fast64 Kongvoluted",
     "version": (2, 6, 0),
     "author": "kurethedead",
     "location": "3DView",
@@ -83,6 +86,7 @@ gameEditorEnum = (
     ("OOT", "OOT", "Ocarina Of Time", 1),
     # ("MM", "MM", "Majora's Mask", 4),
     ("MK64", "MK64", "Mario Kart 64", 3),
+    ("DK64", "DK64", "Donkey Kong 64", 5),
     ("Homebrew", "Homebrew", "Homebrew", 2),
 )
 
@@ -271,6 +275,7 @@ class Fast64_Properties(bpy.types.PropertyGroup):
     sm64: bpy.props.PointerProperty(type=SM64_Properties, name="SM64 Properties")
     oot: bpy.props.PointerProperty(type=OOT_Properties, name="OOT Properties")
     mk64: bpy.props.PointerProperty(type=MK64_Properties, name="MK64 Properties")
+    dk64: bpy.props.PointerProperty(type=DK64_Properties, name="DK64 Properties")
     settings: bpy.props.PointerProperty(type=Fast64Settings_Properties, name="Fast64 Settings")
     renderSettings: bpy.props.PointerProperty(type=Fast64RenderSettings_Properties, name="Fast64 Render Settings")
 
@@ -290,6 +295,7 @@ class Fast64_BoneProperties(bpy.types.PropertyGroup):
     """
 
     sm64: bpy.props.PointerProperty(type=SM64_BoneProperties, name="SM64 Properties")
+    dk64: bpy.props.PointerProperty(type=DK64_BoneProperties, name="DK64 Properties")
 
 
 class Fast64_ObjectProperties(bpy.types.PropertyGroup):
@@ -367,6 +373,7 @@ def upgrade_changed_props():
     SM64_Properties.upgrade_changed_props()
     OOT_Properties.upgrade_changed_props()
     MK64_Properties.upgrade_changed_props()
+    DK64_Properties.upgrade_changed_props()
     SM64_ObjectProperties.upgrade_changed_props()
     SM64_BoneProperties.upgrade_changed_props()
     OOT_ObjectProperties.upgrade_changed_props()
@@ -434,6 +441,9 @@ def set_game_defaults(scene: bpy.types.Scene, set_ucode=True):
     elif scene.gameEditorMode in {"OOT", "MM"}:
         f3d_type = "F3DEX2/LX2"
         world_defaults = oot_world_defaults
+    elif scene.gameEditorMode == "DK64":
+        f3d_type = "F3DEX2/LX2"
+        world_defaults = dk64_world_defaults
     elif scene.gameEditorMode == "MK64":
         f3d_type = "F3DEX/LX"
     elif scene.gameEditorMode == "Homebrew":
@@ -479,6 +489,7 @@ def register():
     sm64_register(True)
     oot_register(True)
     mk64_register(True)
+    dk64_register(True)
 
     gltf_extension_register()
 
@@ -528,6 +539,7 @@ def unregister():
     sm64_unregister(True)
     oot_unregister(True)
     mk64_unregister(True)
+    dk64_unregister(True)
     mat_unregister()
     gltf_extension_unregister()
     bsdf_conv_unregister()

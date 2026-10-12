@@ -1,0 +1,3 @@
+[submodule "fast64_internal/dk64/contrib/dk64_lib_kongvoluted"]
+	path = fast64_internal/dk64/contrib/dk64_lib_kongvoluted
+	url = https://github.com/DorfDork/dk64_lib_kongvoluted

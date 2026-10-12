@@ -58,3 +58,14 @@ class MK64_Panel(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         return context.scene.gameEditorMode == "MK64"
+
+
+class DK64_Panel(bpy.types.Panel):
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "DK64"
+    bl_options = {"DEFAULT_CLOSED"}
+
+    @classmethod
+    def poll(cls, context):
+        return context.scene.gameEditorMode == "DK64"
