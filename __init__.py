@@ -509,7 +509,7 @@ def register():
     bpy.types.Scene.ignoreTextureRestrictions = bpy.props.BoolProperty(name="Ignore Texture Restrictions")
     bpy.types.Scene.fullTraceback = bpy.props.BoolProperty(name="Show Full Error Traceback", default=False)
     bpy.types.Scene.gameEditorMode = bpy.props.EnumProperty(
-        name="Game", default="SM64", items=gameEditorEnum, update=gameEditorUpdate
+        name="Game", default="DK64", items=gameEditorEnum, update=gameEditorUpdate
     )
     bpy.types.Scene.saveTextures = bpy.props.BoolProperty(name="Save Textures As PNGs (May Break CI Textures)")
     bpy.types.Scene.exportHiddenGeometry = bpy.props.BoolProperty(name="Export Hidden Geometry", default=True)
